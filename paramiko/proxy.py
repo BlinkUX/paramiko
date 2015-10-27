@@ -21,7 +21,10 @@ from datetime import datetime
 import os
 from shlex import split as shlsplit
 import signal
-from subprocess import Popen, PIPE
+try:
+    from subprocess import Popen, PIPE
+except ImportError:
+    Popen = PIPE = None
 from select import select
 import socket
 import time
@@ -49,6 +52,8 @@ class ProxyCommand(ClosingContextManager):
         :param str command_line:
             the command that should be executed and used as the proxy.
         """
+        if Popen is None:
+            raise RuntimeError("You don't seem to have a working subprocess module, why are you trying to use ProxyCommand?")
         self.cmd = shlsplit(command_line)
         self.process = Popen(self.cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
         self.timeout = None
